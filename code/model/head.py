@@ -3,11 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 from model.utils import SELayer
 
-def build_head(head_cfg):
+def build_head(head_cfg, model_cfg):
     if head_cfg.type == 'HRHead':
         return FloorHead(head_cfg)
     elif head_cfg.type == 'ClassWareHead':
         return ClassWareHead(head_cfg)
+    elif head_cfg.type == 'SimpleUpsample':
+        return SimpleUpsample(head_cfg, model_cfg)
+    else:
+        raise NotImplementedError
 
 BatchNorm = nn.BatchNorm2d
 

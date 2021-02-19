@@ -4,19 +4,26 @@ MODEL:
   type: Z2Z
   backbone:
     type: ResNet18
-  weights: /home/user/julianjuaner/research/pretrain/resnet18.pth
-  discriminator: zi2zi
-  embedding_num: 195
-  embedding_dim: 128
+    out_dim: 512
+    weights: /home/user/julianjuaner/research/pretrain/resnet18.pth
+  decoder:
+    type: SimpleUpsample
+    stride: 32
+  discriminator: 
+    type: zi2zi
+  embedding:
+    type: SimpleEmbedding
+    embedding_num: 195
+    embedding_dim: 128
 
   loss:
-    - type: tvloss
+    - type: TotalVar
       weight: 0.0
-    - type: constloss
+    - type: Constance
       weight: 15.0
-    - type: catrgoryloss
+    - type: Category
       weight: 1.0
-    - type: L1Loss
+    - type: L1
       weight: 100.0
 
   dropout: 0.0

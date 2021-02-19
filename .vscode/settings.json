@@ -1,0 +1,13 @@
+{
+    "python.pythonPath": "c:\\program files\\python38\\python.exe",
+    "python.linting.ignorePatterns": [
+        ".vscode/*.py",
+        "**/site-packages/**/*.py",
+        "*python38/site-packages*",
+        "*cv2*"
+    ],
+    "python.linting.pylintArgs": [
+        "--errors-only",
+        "--generate-members"
+    ]
+}

@@ -5,7 +5,7 @@ import random
 import numpy as np
 from PIL import Image
 from torchvision import transforms
-from sourcecode.configs.make_cfg import Struct
+from code.configs.make_cfg import Struct
 """
 - type: RandomRotation
       prob: 0.3

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sourcecode.model.utils import build_resnet_block, ConvModule
-from sourcecode.utils.configs import merge_dict
+from code.model.utils import build_resnet_block, ConvModule
+from code.utils.configs import merge_dict
 
 BatchNorm = nn.BatchNorm2d
 

@@ -1,7 +1,7 @@
-from sourcecode.model import HRNetW18SmallV2, build_head
-from sourcecode.dataset import FloorPlanDataset, to_color
-from sourcecode.configs import make_config, Options
-from sourcecode.utils.optim_loss import adjust_learning_rate, compute_acc
+from code.model import build_model
+from code.dataset import build_dataset
+from code.configs import make_config, Options
+from code.utils.optim_loss import adjust_learning_rate, compute_metric
 from torch import optim
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -12,22 +12,11 @@ import math
 import os
 import cv2
 
-class FloorPlanModel(nn.Module):
-    def __init__(self, cfg):
-        super().__init__()
-        self.backbone = HRNetW18SmallV2()
-        self.backbone.load_state_dict(torch.load(cfg.MODEL.weights), strict=False)
-        self.head = build_head(cfg.MODEL.head)
-        self.opts = cfg
-
-    def forward(self, x):
-        backbone_out = self.backbone(x)
-        return self.head(backbone_out, x.shape[2:])
-
 def train(cfg):
-    train_dataset = FloorPlanDataset(cfg.DATA.train_data, cfg)
-    eval_dataset = FloorPlanDataset(cfg.DATA.eval_data, cfg)
-    optimizer = 0
+    train_dataset = build_dataset(cfg.DATA.train_data, cfg)
+    eval_dataset = build_dataset(cfg.DATA.eval_data, cfg)
+    model = build_model(cfg).train()
+    
     train_loader = DataLoader(
             train_dataset, 
             batch_size=cfg.TRAIN.batch_size_per_gpu, 
@@ -143,7 +132,5 @@ if "__main__" in __name__:
     parser = OptionInit.initialize(parser)
     opt = parser.parse_args()
     folder_name = opt.exp
-    print(folder_name)
     exp_cfg = make_config(os.path.join(folder_name, "exp.yaml"))
-    print(exp_cfg)
     train(exp_cfg)

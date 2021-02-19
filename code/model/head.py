@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sourcecode.model.utils import SELayer
+from model.utils import SELayer
 
 def build_head(head_cfg):
     if head_cfg.type == 'HRHead':

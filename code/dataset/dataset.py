@@ -6,27 +6,16 @@ import random
 import numpy as np
 from torchvision import transforms
 from torch.utils.data import Dataset
-from sourcecode.dataset.transform import custom_transform
+from code.dataset.transform import custom_transform
 
-FloorPlanDataset_cfg = {
-    'type': 'FloorPlanDataset',
-    'color_maps': [
-        [0, 0, 0],  # background
-        [192, 192, 224],  # closet
-        [192, 255, 255],  # batchroom/washroom
-        [224, 255, 192],  # livingroom/kitchen/dining room
-        [255, 224, 128],  # bedroom
-        [255, 160, 96],  # hall
-        [255, 224, 224],  # balcony
-        [255, 60, 128],  # extra label for opening (door&window)
-        [255, 255, 255],  # extra label for wall line
-        [77, 77, 77] # ignore
-    ],
-}
-
-class FloorPlanDataset(Dataset):
+def build_dataset(dataset_cfg, full_cfg):
+    if dataset_cfg.type == 'FontImgDataset':
+        return FontImgDataset(dataset_cfg, full_cfg)
+    else:
+        raise NotImplementedError
+class FontImgDataset(Dataset):
     """
-    Dataset for Floor Plan (r2v).
+    Dataset for zi2zi translation (r2v).
     """
 
     def __init__(self, opts, full_cfg):

@@ -3,6 +3,38 @@ import torch.nn as nn
 import torch.nn.functional as F
 BatchNorm = nn.BatchNorm2d
 
+def conv3x3(in_planes, out_planes, stride=1, atrous=1):
+    """3x3 convolution with padding"""
+    return nn.Conv2d(
+        in_planes,
+        out_planes,
+        kernel_size=3,
+        stride=stride,
+        padding=atrous,
+        dilation=atrous,
+        bias=False)
+
+def build_norm_layer(norm_cfg, **kwargs):
+    from torch.nn import BatchNorm2d, SyncBatchNorm, InstanceNorm2d
+
+    norm_layer_dict = {
+        'bn_2d': BatchNorm2d,
+        'sync_bn': SyncBatchNorm,
+        'in': InstanceNorm2d
+    }
+
+    def norm(num_features):
+        if norm_cfg is not None:
+            _norm_cfg = norm_cfg
+            norm_type = _norm_cfg
+            return norm_layer_dict[norm_type](num_features, **_norm_cfg)
+        else:
+            if comm.distributed():
+                return norm_layer_dict['sync_bn'](num_features)
+            else:
+                return norm_layer_dict['bn_2d'](num_features)
+
+    return norm
 class SELayer(nn.Module):
 
     def __init__(self, channel, reduction=16):
@@ -274,12 +306,11 @@ class ConvModule(nn.Module):
                  activation='relu',
                  inplace=True):
         super(ConvModule, self).__init__()
-        assert norm_layer is None or norm_layer == 'bn_2d' or norm_layer == 'sync_bn'
         self.activation = activation
         conv = nn.Conv2d(
             in_channels, out_channels, kernel_size, stride, padding, bias=bias)
         self.add_module('0', conv)
-        norm = BatchNorm(out_channels)
+        norm = build_norm_layer(norm_layer, out_channels)
         self.add_module('1', norm)
         self.with_activation = activation is not None
         if self.with_activation:

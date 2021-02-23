@@ -1,8 +1,8 @@
-from sourcecode.model import HRNetW18SmallV2, build_head
-from sourcecode.dataset import FloorPlanDataset, to_color
-from sourcecode.configs import make_config, Options
-from sourcecode.utils.optim_loss import adjust_learning_rate, compute_acc
-from sourcecode.train import FloorPlanModel
+from code.head import build_head
+from code.dataset import FontImgDataset, to_color
+from code.configs import make_config, Options
+from code.utils.optim_loss import adjust_learning_rate, compute_acc
+from code.train import FloorPlanModel
 from torch import optim
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -15,7 +15,7 @@ import cv2
 
 
 def inference(cfg):
-    test_dataset = FloorPlanDataset(cfg.DATA.test_data, cfg)
+    test_dataset = FontImgDataset(cfg.DATA.test_data, cfg)
 
     test_loader = DataLoader(
             test_dataset,

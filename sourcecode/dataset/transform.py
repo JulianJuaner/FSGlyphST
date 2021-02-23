@@ -5,7 +5,7 @@ import random
 import numpy as np
 from PIL import Image
 from torchvision import transforms
-from code.configs.make_cfg import Struct
+from sourcecode.configs.make_cfg import Struct
 """
 - type: RandomRotation
       prob: 0.3
@@ -28,28 +28,28 @@ from code.configs.make_cfg import Struct
       prob: 0.6
       saturation: 0.0
 """
-def custom_transform(cfg, image, mask):
+def custom_transform(cfg, image):
     cfg = Struct(**cfg)
     if cfg.type == 'Rescale':
-        return Rescale(cfg, image, mask)
+        return Rescale(cfg, image)
     elif cfg.type == 'RandomRotation':
-        return RandomRotation(cfg, image, mask)
+        return RandomRotation(cfg, image)
     elif cfg.type == 'RandomHorizontalFlip':
-        return RandomHorizontalFlip(cfg, image, mask)
+        return RandomHorizontalFlip(cfg, image)
     elif cfg.type == 'RandomVerticalFlip':
-        return RandomVerticalFlip(cfg, image, mask)
+        return RandomVerticalFlip(cfg, image)
     elif cfg.type == 'RandomScale':
-        return RandomScale(cfg, image, mask)
+        return RandomScale(cfg, image)
     elif cfg.type == 'RandomCrop':
-        return RandomCrop(cfg, image, mask)
+        return RandomCrop(cfg, image)
     elif cfg.type == 'ColorJitter':
-        return ColorJitter(cfg, image, mask)
+        return ColorJitter(cfg, image)
 
-def Rescale(cfg, img, mask):
+def Rescale(cfg, img):
     output_size = cfg.output_size
     h, w = img.shape[:2]
     if output_size == (w, h):
-        return img, mask
+        return img
 
     h_rate = output_size[1] / h
     w_rate = output_size[0] / w
@@ -59,8 +59,6 @@ def Rescale(cfg, img, mask):
 
     img = cv2.resize(
         img, dsize=(new_w, new_h), interpolation=cv2.INTER_LINEAR)
-    mask = cv2.resize(
-        mask, dsize=(new_w, new_h), interpolation=cv2.INTER_NEAREST)
     
     top = random.randint(0, output_size[1] - new_h)
     bottom = output_size[1] - new_h - top
@@ -74,21 +72,14 @@ def Rescale(cfg, img, mask):
         right,
         cv2.BORDER_CONSTANT,
         value=[255, 255, 255])
-    mask = cv2.copyMakeBorder(
-        mask,
-        top,
-        bottom,
-        left,
-        right,
-        cv2.BORDER_CONSTANT,
-        value=[0])
-    return img, mask
 
-def RandomRotation(cfg, img, mask):
+    return img
+
+def RandomRotation(cfg, img):
     if random.random() < cfg.prob:
         angle = cfg.angle[0] + (cfg.angle[1] -
                                      cfg.angle[0]) * random.random()
-        h, w = mask.shape
+        h, w = img.shape[:2]
         matrix = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1)
         img = cv2.warpAffine(
             img,
@@ -96,26 +87,21 @@ def RandomRotation(cfg, img, mask):
             flags=cv2.INTER_LINEAR,
             borderMode=cv2.BORDER_CONSTANT,
             borderValue=[255, 255, 255])
-        mask = cv2.warpAffine(
-            mask,
-            matrix, (w, h),
-            flags=cv2.INTER_NEAREST,
-            borderMode=cv2.BORDER_CONSTANT,
-            borderValue=0)
-    return img, mask
-def RandomHorizontalFlip(cfg, img, mask):
+        
+    return img
+def RandomHorizontalFlip(cfg, img):
     if random.random() < cfg.prob:
         img = cv2.flip(img, 1)
-        mask = cv2.flip(mask, 1)
-    return img, mask
+        
+    return img
 
-def RandomVerticalFlip(cfg, img, mask):
+def RandomVerticalFlip(cfg, img):
     if random.random() < cfg.prob:
         img = cv2.flip(img, 0)
-        mask = cv2.flip(mask, 0)
-    return img, mask
+        
+    return img
 
-def RandomCrop(cfg, img, mask):
+def RandomCrop(cfg, img):
     h, w = img.shape[:2]
     crop_w, crop_h = cfg.output_size
     pad_h = max(crop_h - h, 0)
@@ -132,15 +118,6 @@ def RandomCrop(cfg, img, mask):
             cv2.BORDER_CONSTANT,
             value=[255, 255, 255])
 
-        mask = cv2.copyMakeBorder(
-            mask,
-            pad_h_half,
-            pad_h - pad_h_half,
-            pad_w_half,
-            pad_w - pad_w_half,
-            cv2.BORDER_CONSTANT,
-            value=0)
-
     margin_h = max(img.shape[0] - cfg.output_size[1], 0)
     margin_w = max(img.shape[1] - cfg.output_size[0], 0)
     offset_h = np.random.randint(0, margin_h + 1)
@@ -149,10 +126,10 @@ def RandomCrop(cfg, img, mask):
     crop_x1, crop_x2 = offset_w, offset_w + cfg.output_size[0]
 
     img = img[crop_y1:crop_y2, crop_x1:crop_x2, ...]
-    mask = mask[crop_y1:crop_y2, crop_x1:crop_x2, ...]
-    return img, mask
+    
+    return img
 
-def ColorJitter(cfg, img, mask):
+def ColorJitter(cfg, img):
     img = Image.fromarray(np.array(img, dtype=np.uint8))
     if random.random() < cfg.prob:
         img = transforms.ColorJitter(
@@ -161,9 +138,9 @@ def ColorJitter(cfg, img, mask):
             saturation=cfg.saturation)(
                 img)
     img = np.array(img)
-    return img, mask
+    return img
 
-def RandomScale(cfg, img, mask):
+def RandomScale(cfg, img):
     if random.random() < cfg.prob:
         if random.random() < cfg.hw_prob:
             scale_factor_x = cfg.scale[0] + (cfg.scale[1] -
@@ -181,10 +158,5 @@ def RandomScale(cfg, img, mask):
             fx=scale_factor_x,
             fy=scale_factor_y,
             interpolation=cv2.INTER_LINEAR)
-        mask = cv2.resize(
-            mask,
-            None,
-            fx=scale_factor_x,
-            fy=scale_factor_y,
-            interpolation=cv2.INTER_NEAREST)
-    return img, mask
+    
+    return img

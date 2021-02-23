@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "c:\\program files\\python38\\python.exe",
+    "python.pythonPath": "C:\\Users\\zhang\\anaconda3\\envs\\py369\\python.exe",
     "python.linting.ignorePatterns": [
         ".vscode/*.py",
         "**/site-packages/**/*.py",

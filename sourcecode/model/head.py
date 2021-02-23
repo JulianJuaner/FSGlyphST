@@ -19,16 +19,16 @@ class SimpleUpsample(nn.Module):
     def __init__(self, head_cfg, model_cfg):
         super(SimpleUpsample, self).__init__()
         self.upsample = int(math.log(head_cfg.stride, 2))
-        self.in_channel = model_cfg.backbone.out_dim + model.cfg.embedding.embedding_dim
-        self.out_channel = model_cfg/out_channels
+        self.in_channel = model_cfg.backbone.out_dim + model_cfg.embedding.embedding_dim
+        self.out_channel = model_cfg.out_channels
 
         self.conv_model = []
-        self.conv_model.append(ConvModule(in_channel, in_channel//8, 3, 1, 1))
-        self.conv_model.append(ConvModule(in_channel//4, in_channel//8, 3, 1, 1))
+        self.conv_model.append(ConvModule(self.in_channel, self.in_channel//4, 3, 1, 1))
+        self.conv_model.append(ConvModule(self.in_channel//4, self.in_channel//8, 3, 1, 1))
         for i in range(self.upsample-2):
-            self.conv_model.append(ConvModule(in_channel//8, in_channel//8, 3, 1, 1))
+            self.conv_model.append(ConvModule(self.in_channel//8, self.in_channel//8, 3, 1, 1))
 
-        self.conv_model.append(nn.Conv2d(in_channel//4, self.out_channel, 1, 1, 0))
+        self.conv_model.append(nn.Conv2d(self.in_channel//8, self.out_channel, 1, 1, 0))
             
 
     def forward(self, embed):

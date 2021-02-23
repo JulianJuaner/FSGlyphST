@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 def build_embedding(embedding_cfg, model_cfg):
-    if model_cfg.type == "SimpleEmbedding":
+    if embedding_cfg.type == "SimpleEmbedding":
         return SimpleEmbedding(embedding_cfg, model_cfg)
     else:
         raise NotImplementedError
@@ -14,4 +14,4 @@ class SimpleEmbedding(nn.Module):
         self.embedding = nn.Embedding(self.embedding_num, self.embedding_dim)
         
     def forward(self, idx):
-        return self.embedding(dix)
+        return self.embedding(idx).view(-1, self.embedding_dim, 1, 1)

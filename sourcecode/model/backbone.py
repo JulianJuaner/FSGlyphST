@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torchvision
 import torch.nn.functional as F
-from code.utils.make_cfg import merge_dict
+from sourcecode.configs.make_cfg import merge_dict
 from torch.nn import BatchNorm2d, SyncBatchNorm
-from code.model.utils import build_resnet_block, conv3x3, ConvModule
+from sourcecode.model.utils import build_resnet_block, conv3x3, ConvModule
 
 def build_norm_layer(norm_cfg, **kwargs):
     from torch.nn import BatchNorm2d, SyncBatchNorm
@@ -19,10 +19,7 @@ def build_norm_layer(norm_cfg, **kwargs):
             norm_type = _norm_cfg.pop('type')
             return norm_layer_dict[norm_type](num_features, **_norm_cfg)
         else:
-            if comm.distributed():
-                return norm_layer_dict['sync_bn'](num_features)
-            else:
-                return norm_layer_dict['bn_2d'](num_features)
+            return norm_layer_dict['bn_2d'](num_features)
 
     return norm
 
@@ -61,8 +58,8 @@ ResNet101_cfg = {
 }
 
 def build_backbone(backbone_cfg, full_cfg):
-    if model_cfg.type == "resnet18":
-        return ResNet18(backbone_cfg, full_cfg)
+    if backbone_cfg.type == "ResNet18":
+        return ResNet18(in_channels=full_cfg.in_channels)
     else:
         raise NotImplementedError
 
@@ -253,7 +250,7 @@ class ResNet(nn.Module):
         self.layers.append(x)
         x = self.layer4(x)
         self.layers.append(x)
-        global_res = self.last_transform(F.adaptive_avg_pool2d(layer4, 1))
+        global_res = self.last_transform(F.adaptive_avg_pool2d(x, 1))
         return self.layers, global_res
 
 

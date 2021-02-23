@@ -14,7 +14,7 @@ def conv3x3(in_planes, out_planes, stride=1, atrous=1):
         dilation=atrous,
         bias=False)
 
-def build_norm_layer(norm_cfg, **kwargs):
+def build_norm(norm_cfg, num_features):
     from torch.nn import BatchNorm2d, SyncBatchNorm, InstanceNorm2d
 
     norm_layer_dict = {
@@ -29,12 +29,9 @@ def build_norm_layer(norm_cfg, **kwargs):
             norm_type = _norm_cfg
             return norm_layer_dict[norm_type](num_features, **_norm_cfg)
         else:
-            if comm.distributed():
-                return norm_layer_dict['sync_bn'](num_features)
-            else:
-                return norm_layer_dict['bn_2d'](num_features)
+            return norm_layer_dict['bn_2d'](num_features)
 
-    return norm
+    return norm(num_features)
 class SELayer(nn.Module):
 
     def __init__(self, channel, reduction=16):
@@ -310,7 +307,7 @@ class ConvModule(nn.Module):
         conv = nn.Conv2d(
             in_channels, out_channels, kernel_size, stride, padding, bias=bias)
         self.add_module('0', conv)
-        norm = build_norm_layer(norm_layer, out_channels)
+        norm = build_norm(norm_layer, out_channels)
         self.add_module('1', norm)
         self.with_activation = activation is not None
         if self.with_activation:

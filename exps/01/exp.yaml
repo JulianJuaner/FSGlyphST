@@ -107,8 +107,8 @@ TRAIN:
   eval_freq: 5
   resume: 0
 
-  print_freq: 5 # iteration
-  batch_size_per_gpu: 24
+  print_freq: 50 # iteration
+  batch_size_per_gpu: 32
 
 EVAL:
   epoch: -1

@@ -11,7 +11,7 @@ class SimpleEmbedding(nn.Module):
         super(SimpleEmbedding, self).__init__()
         self.embedding_num = opts.embedding_num
         self.embedding_dim = opts.embedding_dim
-        self.embedding = nn.Embedding(self.embedding_num, self.embedding_dim)
+        self.embedding = nn.Embedding(self.embedding_num, self.embedding_dim).cuda()
         
     def forward(self, idx):
         return self.embedding(idx).view(-1, self.embedding_dim, 1, 1)

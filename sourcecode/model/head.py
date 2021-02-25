@@ -23,12 +23,12 @@ class SimpleUpsample(nn.Module):
         self.out_channel = model_cfg.out_channels
 
         self.conv_model = []
-        self.conv_model.append(ConvModule(self.in_channel, self.in_channel//4, 3, 1, 1))
-        self.conv_model.append(ConvModule(self.in_channel//4, self.in_channel//8, 3, 1, 1))
+        self.conv_model.append(ConvModule(self.in_channel, self.in_channel//4, 3, 1, 1).cuda())
+        self.conv_model.append(ConvModule(self.in_channel//4, self.in_channel//8, 3, 1, 1).cuda())
         for i in range(self.upsample-2):
-            self.conv_model.append(ConvModule(self.in_channel//8, self.in_channel//8, 3, 1, 1))
+            self.conv_model.append(ConvModule(self.in_channel//8, self.in_channel//8, 3, 1, 1).cuda())
 
-        self.conv_model.append(nn.Conv2d(self.in_channel//8, self.out_channel, 1, 1, 0))
+        self.conv_model.append(nn.Conv2d(self.in_channel//8, self.out_channel, 1, 1, 0).cuda())
             
 
     def forward(self, embed):

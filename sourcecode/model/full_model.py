@@ -79,10 +79,10 @@ class Z2Z(nn.Module):
             self.loss_func_dict[item.type] = float(item.weight)
         
     def forward(self, data):
-        cat_id = data['cat_id']
-        type_id = data['type_id']
-        input_img = data['imgs']
-        target_img = data['targets']
+        cat_id = data['cat_id'].cuda()
+        type_id = data['type_id'].cuda()
+        input_img = data['imgs'].cuda()
+        target_img = data['targets'].cuda()
 
         feat_list, global_embed = self.encoder(input_img)
         cat_embed = self.embedding(cat_id)
@@ -105,10 +105,21 @@ class Z2Z(nn.Module):
         cheat_loss          = self.loss_func_dict['Cheat']*self.BCE(fake_patch_disrm, torch.ones_like(fake_patch_disrm))
         discrim_loss        = self.BCE(real_patch_disrm, torch.ones_like(real_patch_disrm)) + \
                               self.BCE(fake_patch_disrm, torch.zeros_like(fake_patch_disrm))
-        
+
         loss_g = cheat_loss + l1_loss + self.loss_func_dict['Category']* fake_category_loss + const_loss # + tv_loss
         loss_d = discrim_loss + category_loss/2
-        return loss_d, loss_g, fake_img
+
+        loss_dict = dict()
+        loss_dict['cheat_loss'] = cheat_loss.item()
+        loss_dict['l1_loss'] = l1_loss.item()
+        loss_dict['fake_category_loss'] = fake_category_loss.item()
+        loss_dict['real_category_loss'] = real_category_loss.item()
+        loss_dict['discrim_loss'] = discrim_loss.item()
+        loss_dict['const_loss'] = const_loss.item()
+        loss_dict['loss_g'] = loss_g.item()
+        loss_dict['loss_d'] = loss_d.item()
+
+        return loss_d, loss_g, fake_img, loss_dict
 
 
 

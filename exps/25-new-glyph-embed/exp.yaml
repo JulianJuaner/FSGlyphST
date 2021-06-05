@@ -1,0 +1,139 @@
+NAME: zi2zi_refactor
+FOLDER: ./exps/25-new-glyph-embed/
+MODEL:
+  type: VGG_discrim_new_comp
+  glyph_embedding_num: 156
+  distance_weight: 5
+  backbone:
+    type: ResNet18
+    out_dim: [512, 256, 128, 64]
+    weights: /data/julianzhang/pretrain/resnet18_v1.pth
+  decoder:
+    type: SkipConnect
+    stride: 32
+    dropout: 0.5
+  discriminator: 
+    type: VGG_deep_shallow
+  embedding:
+    type: SimpleEmbedding
+    embedding_num: 20
+    embedding_dim: 256
+
+  font_size: 3500
+  fake_emb: True
+
+
+  loss:
+    - type: TotalVar
+      weight: 0.0
+    - type: Constant
+      weight: 0.0
+    - type: Category
+      weight: 1.0
+    - type: L1
+      weight: 10
+    - type: Cheat
+      weight: 1.0
+    - type: Type
+      weight: 0.3
+    - type: VGG
+      weight: [10.0, 2.0]
+    - type: glyph
+      weight: 0.2
+      
+
+  dropout: 0.0
+  in_channels: 3
+  out_channels: 3
+
+DATA:
+  origin_type: data/PNGfont_cn/black
+  preprocessor:
+    - type: Rescale
+      output_size: [256, 256]
+
+  mean: [0,0,0]
+  std: [1,1,1]
+  value_scale: 255
+
+  train_data:
+    type: FewShotFontImgDataset
+    data_name: train
+    mode: training
+    root: '/data/julianzhang/VecfontST'
+    few_shot_cats: 5
+    few_shot_factor: 20 # factor to sample few shots.
+    balance_factor: 20 # factor to balance the few-shot samples
+    all_cats: 20
+    shuf_prob: 0.05
+    data_path:
+        - '/data/julianzhang/VecfontST/data/data_train.txt'
+    glyph_path: '/data/julianzhang/VecfontST/data/component_vector.txt'
+      
+  eval_data:
+    type: FontImgDataset
+    data_name: val
+    mode: evaluate
+    root: '/data/julianzhang/VecfontST'
+    data_path:
+      - '/data/julianzhang/VecfontST/data/data_train.txt'
+      - '/data/julianzhang/VecfontST/data/data_val.txt'
+    glyph_path: '/data/julianzhang/VecfontST/data/component_vector.txt'
+
+  test_data:
+    type: FontImgDataset
+    data_name: test
+    mode: test
+    root: '/data/julianzhang/VecfontST'
+    data_path:
+      - '/data/julianzhang/VecfontST/data/data_train.txt'
+      - '/data/julianzhang/VecfontST/data/data_val.txt'
+    glyph_path: '/data/julianzhang/VecfontST/data/component_vector.txt'
+
+EVALUATE:
+  evaluators:
+    - type: L1_distance
+
+TRAIN:
+  optimizer:
+    type: AdamOptimizer
+    lr: 0.001
+
+  lr_scheduler:
+    type: StepLR
+    decay_epoch: 10
+    decay_rate: 0.5
+
+  gen_lr_factor: 1.0
+  dis_lr_factor: 1.0
+  flip_label: True
+
+  data_argumentation:
+    - type: RandomRotation
+      prob: 0.0
+      angle: [-5, 5]
+    - type: RandomScale
+      scale: [0.9, 1.1]
+      prob: 0.0
+      hw_prob: 0.0
+    - type: RandomCrop
+      output_size: [256, 256]
+    - type: RandomLineWidth
+      prob: 0.2
+      max_dilation_time: 3
+      max_erode_time: 3
+    - type: GaussianBlur
+      prob: 0.0
+      kernel_range: [3, 5, 7]
+
+
+  max_epoch: 30
+  ckpt_freq: 5
+  eval_freq: 5
+  resume: -1
+
+  print_freq: 50 # iteration
+  batch_size_per_gpu: 24
+
+EVAL:
+  epoch: 30
